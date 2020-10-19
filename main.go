@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/eduardonunesp/hostz/cmd"
+)
 
 func main() {
-	fmt.Println("SD")
+	cmd.Execute()
 }
