@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/eduardonunesp/hostz/internals"
 	"github.com/eduardonunesp/hostz/internals/generator"
 	"github.com/eduardonunesp/hostz/internals/parser"
 	"github.com/spf13/cobra"
@@ -50,9 +51,21 @@ var generateFromProfileCmd = &cobra.Command{
 	},
 }
 
+var generateDefaultHostfileCmd = &cobra.Command{
+	Use:   "createdefault",
+	Short: "Create host file with a basic default configuration",
+	Run: func(cmd *cobra.Command, args []string) {
+		hostsGenerator := generator.NewHostsGenerator()
+		fmt.Print(hostsGenerator.BuildHostsFromProfile(internals.GetDefaultProfile()))
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(hostCmd)
 
 	hostCmd.AddCommand(generateFromProfileCmd)
 	generateFromProfileCmd.SetUsageTemplate("host <profile name>")
+
+	hostCmd.AddCommand(generateDefaultHostfileCmd)
+	generateFromProfileCmd.SetUsageTemplate("host createdefault")
 }

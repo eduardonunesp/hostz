@@ -12,6 +12,7 @@ import (
 
 type HostsGenerator interface {
 	BuildHostsFromProfileName(name string) (string, error)
+	BuildHostsFromProfile(profile model.Profile) string
 }
 
 type hostsGenerator struct{}
@@ -45,4 +46,13 @@ func (hg hostsGenerator) BuildHostsFromProfileName(name string) (string, error) 
 	}
 
 	return output, nil
+}
+
+func (hg hostsGenerator) BuildHostsFromProfile(profile model.Profile) string {
+	output := fmt.Sprintf("## %s\n", profile.Name)
+	for _, host := range profile.HostList {
+		output += fmt.Sprintf("%s %s %s\n", host.IP, host.Name, host.Alias)
+	}
+
+	return output
 }

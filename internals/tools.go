@@ -39,3 +39,32 @@ func GetHomeDir() (string, error) {
 
 	return homeDirConfig, nil
 }
+
+func GetDefaultProfile() model.Profile {
+	return model.Profile{
+		Name: "default",
+		HostList: model.HostList{
+			model.Host{
+				IP:    "127.0.0.1",
+				Name:  "localhost",
+				Alias: "loopback",
+			},
+			model.Host{
+				IP:   "255.255.255.255",
+				Name: "broadcasthost",
+			},
+			model.Host{
+				IP:   "127.0.0.1",
+				Name: "localhost.localdomain",
+			},
+			model.Host{
+				IP:   "127.0.0.1",
+				Name: "local",
+			},
+			model.Host{
+				IP:   "::1",
+				Name: "localhost",
+			},
+		},
+	}
+}
