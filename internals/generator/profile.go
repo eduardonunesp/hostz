@@ -14,7 +14,7 @@ import (
 
 type ProfileGenerator interface {
 	CreateProfileFileFromName(name string) error
-	CreateProfileFromHostMap(name string, hostMap model.HostMap) error
+	CreateProfileFromHostList(name string, hostMap model.HostList) error
 }
 
 type profileGenerator struct{}
@@ -64,10 +64,10 @@ func (pg profileGenerator) CreateProfileFileFromName(name string) error {
 	return pg.buildFromProfile(profile)
 }
 
-func (pg profileGenerator) CreateProfileFromHostMap(name string, hostMap model.HostMap) error {
+func (pg profileGenerator) CreateProfileFromHostList(name string, hostList model.HostList) error {
 	profile := model.Profile{
-		Name:    name,
-		HostMap: hostMap,
+		Name:     name,
+		HostList: hostList,
 	}
 
 	return pg.buildFromProfile(profile)

@@ -18,5 +18,5 @@ func TestParseHosts(t *testing.T) {
 	hostBytes, err := hosts.ReadHostsFile("../../fixtures/hosts")
 	assert.Nil(t, err)
 	results := hosts.ParseHosts(hostBytes)
-	assert.Equal(t, len(results), 2)
+	assert.Equal(t, len(results), 3)
 }

@@ -52,7 +52,7 @@ var copyProfileFromCmd = &cobra.Command{
 		}
 
 		profileGenerator := generator.NewProfileGenerator()
-		if err := profileGenerator.CreateProfileFromHostMap(args[0], hostsParser.ParseHosts(bs)); err != nil {
+		if err := profileGenerator.CreateProfileFromHostList(args[0], hostsParser.ParseHosts(bs)); err != nil {
 			fmt.Printf("Failed to generate profile %+v\n", err)
 			return
 		}

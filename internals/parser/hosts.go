@@ -10,7 +10,7 @@ import (
 
 type HostsParser interface {
 	ReadHostsFile(hostsPath string) ([]byte, error)
-	ParseHosts(hostsFileContent []byte) model.HostMap
+	ParseHosts(hostsFileContent []byte) model.HostList
 }
 
 type hostsParser struct{}
@@ -29,8 +29,8 @@ func (hs hostsParser) ReadHostsFile(hostsPath string) ([]byte, error) {
 	return bs, nil
 }
 
-func (hs hostsParser) ParseHosts(hostsFileContent []byte) model.HostMap {
-	hostsMap := model.HostMap{}
+func (hs hostsParser) ParseHosts(hostsFileContent []byte) model.HostList {
+	hostList := model.HostList{}
 	for _, line := range strings.Split(strings.Trim(string(hostsFileContent), " \t\r\n"), "\n") {
 		line = strings.Replace(strings.Trim(line, " \t"), "\t", " ", -1)
 		if len(line) == 0 || line[0] == ';' || line[0] == '#' {
@@ -38,16 +38,21 @@ func (hs hostsParser) ParseHosts(hostsFileContent []byte) model.HostMap {
 		}
 
 		pieces := strings.SplitN(line, " ", 2)
+
 		if len(pieces) > 1 && len(pieces[0]) > 0 {
-			if names := strings.Fields(pieces[1]); len(names) > 0 {
-				if _, ok := hostsMap[pieces[0]]; ok {
-					hostsMap[pieces[0]] = append(hostsMap[pieces[0]], names...)
-				} else {
-					hostsMap[pieces[0]] = names
-				}
+			var alias string
+
+			if len(pieces) > 2 {
+				alias = pieces[2]
 			}
+
+			hostList = append(hostList, model.Host{
+				IP:    pieces[0],
+				Name:  pieces[1],
+				Alias: alias,
+			})
 		}
 	}
 
-	return hostsMap
+	return hostList
 }

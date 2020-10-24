@@ -1,6 +1,13 @@
 package internals
 
-import "os"
+import (
+	"fmt"
+	"os"
+	"os/user"
+
+	"github.com/eduardonunesp/hostz/internals/model"
+	"github.com/pkg/errors"
+)
 
 func DirExists(path string) bool {
 	if fi, err := os.Stat(path); err == nil {
@@ -20,4 +27,15 @@ func FileExists(name string) bool {
 	}
 
 	return false
+}
+
+func GetHomeDir() (string, error) {
+	usr, err := user.Current()
+	if err != nil {
+		return "", errors.Wrap(err, "fatal error on obtain home dir")
+	}
+
+	homeDirConfig := fmt.Sprintf("%s/%s", usr.HomeDir, model.ProfilesPath)
+
+	return homeDirConfig, nil
 }

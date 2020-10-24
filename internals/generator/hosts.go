@@ -3,9 +3,8 @@ package generator
 import (
 	"fmt"
 	"io/ioutil"
-	"os/user"
-	"strings"
 
+	"github.com/eduardonunesp/hostz/internals"
 	"github.com/eduardonunesp/hostz/internals/model"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -22,13 +21,12 @@ func NewHostsGenerator() HostsGenerator {
 }
 
 func (hg hostsGenerator) BuildHostsFromProfileName(name string) (string, error) {
-	usr, err := user.Current()
+	homeDir, err := internals.GetHomeDir()
 	if err != nil {
 		return "", errors.Wrap(err, "fatal error on obtain home dir")
 	}
 
-	homeDirConfig := fmt.Sprintf("%s/%s", usr.HomeDir, model.ProfilesPath)
-	bs, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", homeDirConfig, name))
+	bs, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", homeDir, name))
 
 	if err != nil {
 		return "", errors.Wrap(err, "failed to get profile file")
@@ -42,8 +40,8 @@ func (hg hostsGenerator) BuildHostsFromProfileName(name string) (string, error) 
 	}
 
 	output := fmt.Sprintf("## %s\n", name)
-	for ip, hosts := range profile.HostMap {
-		output += fmt.Sprintf("%s %s\n", ip, strings.Join(hosts, " "))
+	for _, host := range profile.HostList {
+		output += fmt.Sprintf("%s %s %s\n", host.IP, host.Name, host.Alias)
 	}
 
 	return output, nil

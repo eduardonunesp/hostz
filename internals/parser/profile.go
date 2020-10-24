@@ -3,8 +3,8 @@ package parser
 import (
 	"fmt"
 	"io/ioutil"
-	"os/user"
 
+	"github.com/eduardonunesp/hostz/internals"
 	"github.com/eduardonunesp/hostz/internals/model"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
@@ -21,13 +21,12 @@ func NewProfileParser() ProfileParser {
 }
 
 func (pp profileParser) GetProfileNames() ([]string, error) {
-	usr, err := user.Current()
+	homeDir, err := internals.GetHomeDir()
 	if err != nil {
 		return nil, errors.Wrap(err, "fatal error on obtain home dir")
 	}
 
-	homeDirConfig := fmt.Sprintf("%s/%s", usr.HomeDir, model.ProfilesPath)
-	files, err := ioutil.ReadDir(homeDirConfig)
+	files, err := ioutil.ReadDir(homeDir)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot read dir")
@@ -36,7 +35,7 @@ func (pp profileParser) GetProfileNames() ([]string, error) {
 	var profileNames []string
 
 	for _, file := range files {
-		bs, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", homeDirConfig, file.Name()))
+		bs, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", homeDir, file.Name()))
 
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get profile file")
