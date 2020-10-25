@@ -9,30 +9,27 @@ The `hostz` make easy to control your `/etc/hosts` file based on profiles, let's
 ## Example Of Usage
 
 ```bash
-# Load the default profile
+# Copy the current /etc/hosts to a profile named default
 hostz profile copy default /etc/hosts
 
 # Create a new hosts file
-echo "127.0.0.1 mycoolsite.coolz" > /etc/hosts
-echo "127.0.0.1 localhost" >> /etc/hosts
-echo "::1       localhost" >> /etc/hosts
+echo "127.0.0.1 mycoolsite.coolz" > myhosts
+echo "127.0.0.1 localhost" > myhosts
+echo "::1       localhost" > myhosts
 
-# Load the new profile
-hostz profile copy developer /etc/hosts
+# Copy the new hosts file to a profile named developer
+hostz profile copy developer myhosts
 
-# Load the old profile back
-hostz host generate default > /etc/hosts
+# Load the developer profile and do your work
+hostz host use developer
+
+# Load the default profile when you finish your work
+hostz host use default
 ```
 
 ## Installation
 
-Install via `homebrew`
-
-```bash
-brew install hostz
-```
-
-Or install via the `go get` tool
+Via the `go get` tool
 
 ```bash
 go get -u github.com/eduardonunesp/hostz
