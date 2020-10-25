@@ -10,6 +10,7 @@ import (
 
 type HostsParser interface {
 	ReadHostsFile(hostsPath string) ([]byte, error)
+	ParseProfile(hostsFileContent []byte) string
 	ParseHosts(hostsFileContent []byte) model.HostList
 }
 
@@ -27,6 +28,16 @@ func (hs hostsParser) ReadHostsFile(hostsPath string) ([]byte, error) {
 	}
 
 	return bs, nil
+}
+
+func (hs hostsParser) ParseProfile(hostsFileContent []byte) string {
+	lines := strings.Split(strings.Trim(string(hostsFileContent), " \t\r\n"), "\n")
+
+	if len(lines) == 0 {
+		return "No profile specification found"
+	}
+
+	return lines[0]
 }
 
 func (hs hostsParser) ParseHosts(hostsFileContent []byte) model.HostList {

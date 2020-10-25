@@ -30,12 +30,23 @@ func FileExists(name string) bool {
 }
 
 func GetHomeDir() (string, error) {
-	usr, err := user.Current()
-	if err != nil {
-		return "", errors.Wrap(err, "fatal error on obtain home dir")
+	var homeDir string
+
+	sudoUser, ok := os.LookupEnv("SUDO_USER")
+
+	if ok {
+		homeDir = "/Users/" + sudoUser
+	} else {
+		usr, err := user.Current()
+
+		if err != nil {
+			return "", errors.Wrap(err, "fatal error on obtain home dir")
+		}
+
+		homeDir = usr.HomeDir
 	}
 
-	homeDirConfig := fmt.Sprintf("%s/%s", usr.HomeDir, model.ProfilesPath)
+	homeDirConfig := fmt.Sprintf("%s/%s", homeDir, model.ProfilesPath)
 
 	return homeDirConfig, nil
 }

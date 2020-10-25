@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"strings"
 
 	"github.com/eduardonunesp/hostz/internals/generator"
@@ -75,6 +76,64 @@ var listProfilesCmd = &cobra.Command{
 	},
 }
 
+var useFromProfileCmd = &cobra.Command{
+	Use:   "use <profile>",
+	Short: "Configures the hostsfile with the selected profile",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			cmd.Usage()
+			return fmt.Errorf("profile name needed")
+		}
+
+		profileParser := parser.NewProfileParser()
+		profileNames, err := profileParser.GetProfileNames()
+
+		if err != nil {
+			return fmt.Errorf("failed to get profile names %s", err)
+		}
+
+		for _, name := range profileNames {
+			if name == args[0] {
+				hostsGenerator := generator.NewHostsGenerator()
+				output, err := hostsGenerator.BuildHostsFromProfileName(args[0])
+
+				if err != nil {
+					return fmt.Errorf("Failed to get profile data %s", err)
+				}
+
+				err = ioutil.WriteFile("/etc/hosts", []byte(output), 0644)
+
+				if err != nil {
+					return fmt.Errorf("Failed to write to hostsfile %s", err)
+				}
+
+				return nil
+			}
+		}
+
+		fmt.Printf("Profile %s not find\n", args[0])
+		return nil
+	},
+}
+
+var currentProfileCmd = &cobra.Command{
+	Use:   "current",
+	Short: "Get the current profile used",
+	Run: func(cmd *cobra.Command, args []string) {
+		hostParser := parser.NewHostsParser()
+		bs, err := hostParser.ReadHostsFile("/etc/hosts")
+
+		if err != nil {
+			fmt.Printf("Failed to read hosts file %+v\n", err)
+			return
+		}
+
+		result := hostParser.ParseProfile(bs)
+
+		fmt.Printf("Profiles available: %s\n", result)
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(profileCmd)
 
@@ -86,4 +145,10 @@ func init() {
 
 	profileCmd.AddCommand(listProfilesCmd)
 	listProfilesCmd.SetUsageTemplate("list")
+
+	profileCmd.AddCommand(useFromProfileCmd)
+	useFromProfileCmd.SetUsageTemplate("use <profile name>")
+
+	profileCmd.AddCommand(currentProfileCmd)
+	currentProfileCmd.SetUsageTemplate("current")
 }
