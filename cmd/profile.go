@@ -38,7 +38,7 @@ var createProfileCmd = &cobra.Command{
 
 var copyProfileFromCmd = &cobra.Command{
 	Use:   "copy <profile name> <path for the hosts file>",
-	Short: "Ceates a profile based the hosts file passed",
+	Short: "Ceates a profile based the hosts on a given file",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
 			fmt.Printf("Profile path needed\n")
@@ -60,6 +60,33 @@ var copyProfileFromCmd = &cobra.Command{
 			return
 		}
 		fmt.Printf("Profile named %s created with sucess", args[0])
+	},
+}
+
+var downloadProfileCmd = &cobra.Command{
+	Use:   "download <profile name> <url>",
+	Short: "Ceates a profile based the hosts on a given url",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) < 1 {
+			fmt.Printf("Profile path needed\n")
+			cmd.Usage()
+			return
+		}
+
+		hostsParser := parser.NewHostsParser()
+		bs, err := hostsParser.DownloadHostsFile(args[1])
+
+		if err != nil {
+			fmt.Printf("Failed to download hosts file %+v\n", err)
+			return
+		}
+
+		profileGenerator := generator.NewProfileGenerator()
+		if err := profileGenerator.CreateProfileFromHostList(args[0], hostsParser.ParseHosts(bs)); err != nil {
+			fmt.Printf("Failed to generate profile %+v\n", err)
+			return
+		}
+		fmt.Printf("Profile named %s downloaded and created with sucess", args[0])
 	},
 }
 
@@ -130,41 +157,6 @@ var useFromProfileCmd = &cobra.Command{
 	},
 }
 
-var printProfileCmd = &cobra.Command{
-	Use:   "print <profile>",
-	Short: "Print to terminal the profile selected",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			cmd.Usage()
-			return fmt.Errorf("profile name needed")
-		}
-
-		profileParser := parser.NewProfileParser()
-		profileNames, err := profileParser.GetProfileNames()
-
-		if err != nil {
-			return fmt.Errorf("failed to get profile names %s", err)
-		}
-
-		for _, name := range profileNames {
-			if name == args[0] {
-				hostsGenerator := generator.NewHostsGenerator()
-				output, err := hostsGenerator.BuildHostsFromProfileName(args[0])
-
-				if err != nil {
-					return fmt.Errorf("Failed to get profile data %s", err)
-				}
-
-				fmt.Println(output)
-
-				return nil
-			}
-		}
-
-		return nil
-	},
-}
-
 var currentProfileCmd = &cobra.Command{
 	Use:   "current",
 	Short: "Get the current profile used",
@@ -179,7 +171,7 @@ var currentProfileCmd = &cobra.Command{
 
 		result := hostParser.ParseProfile(bs)
 
-		fmt.Printf("Profiles available: %s\n", result)
+		fmt.Printf("Current profile: %s\n", result)
 	},
 }
 
@@ -192,6 +184,9 @@ func init() {
 	profileCmd.AddCommand(copyProfileFromCmd)
 	copyProfileFromCmd.SetUsageTemplate("profile copy <profile name> <path to hosts file>")
 
+	profileCmd.AddCommand(downloadProfileCmd)
+	downloadProfileCmd.SetUsageTemplate("profile download <profile name> <url>")
+
 	profileCmd.AddCommand(listProfilesCmd)
 	listProfilesCmd.SetUsageTemplate("list")
 
@@ -200,7 +195,4 @@ func init() {
 
 	profileCmd.AddCommand(currentProfileCmd)
 	currentProfileCmd.SetUsageTemplate("current")
-
-	profileCmd.AddCommand(printProfileCmd)
-	currentProfileCmd.SetUsageTemplate("print <profile name>")
 }

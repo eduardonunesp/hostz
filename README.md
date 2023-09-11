@@ -21,10 +21,26 @@ echo "::1       localhost" > myhosts
 hostz profile copy developer myhosts
 
 # Load the developer profile and do your work
-hostz host use developer
+# Requires sudo to write to /etc/hosts
+hostz profile use developer
 
 # Load the default profile when you finish your work
-hostz host use default
+# Requires sudo to write to /etc/hosts
+hostz profile use default
+```
+
+Because the command `use` requires root write to `/etc/hosts`, you need to use `sudo` or run use the print command and later copy/replace your `/etc/hosts`
+
+```bash
+# Print the default profile
+hostz host generate default
+```
+
+Download the updated hosts file from the internet and create a new profile, you can use this new profile as your default profile
+
+```bash
+# Download the updated hosts file from StevenBlack/hosts and creates a new profile with the name newdefault
+hostz profile download newdefault https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
 ```
 
 ## Installation
@@ -34,3 +50,8 @@ Via the `go get` tool
 ```bash
 go get -u github.com/eduardonunesp/hostz
 ```
+
+## Some good sources for a default `/etc/hosts` file
+
+- https://github.com/StevenBlack/hosts
+- https://github.com/Ultimate-Hosts-Blacklist/Ultimate.Hosts.Blacklist

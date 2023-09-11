@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"io"
+	"net/http"
 	"os"
 	"strings"
 
@@ -10,6 +12,7 @@ import (
 
 type HostsParser interface {
 	ReadHostsFile(hostsPath string) ([]byte, error)
+	DownloadHostsFile(hostsURL string) ([]byte, error)
 	ParseProfile(hostsFileContent []byte) string
 	ParseHosts(hostsFileContent []byte) model.HostList
 }
@@ -23,6 +26,24 @@ func NewHostsParser() HostsParser {
 func (hs hostsParser) ReadHostsFile(hostsPath string) ([]byte, error) {
 	bs, err := os.ReadFile(hostsPath)
 
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read hosts file")
+	}
+
+	return bs, nil
+}
+
+func (hs hostsParser) DownloadHostsFile(hostsURL string) ([]byte, error) {
+	response, err := http.Get(hostsURL)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to download hosts file")
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("failed to download hosts file, status code %d", response.StatusCode)
+	}
+	defer response.Body.Close()
+	bs, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read hosts file")
 	}
