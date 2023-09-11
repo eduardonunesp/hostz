@@ -105,7 +105,7 @@ var useFromProfileCmd = &cobra.Command{
 		for _, name := range profileNames {
 			if name == args[0] {
 				if !isRoot() {
-					return fmt.Errorf("you need to be root to use this command")
+					return fmt.Errorf("you need to be root to use this command, or try print command")
 				}
 
 				hostsGenerator := generator.NewHostsGenerator()
