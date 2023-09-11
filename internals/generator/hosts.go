@@ -1,8 +1,9 @@
 package generator
 
 import (
+	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/eduardonunesp/hostz/internals"
 	"github.com/eduardonunesp/hostz/internals/model"
@@ -27,7 +28,7 @@ func (hg hostsGenerator) BuildHostsFromProfileName(name string) (string, error) 
 		return "", errors.Wrap(err, "fatal error on obtain home dir")
 	}
 
-	bs, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", homeDir, name))
+	bs, err := os.ReadFile(fmt.Sprintf("%s/%s", homeDir, name))
 
 	if err != nil {
 		return "", errors.Wrap(err, "failed to get profile file")
@@ -35,17 +36,16 @@ func (hg hostsGenerator) BuildHostsFromProfileName(name string) (string, error) 
 
 	var profile model.Profile
 	err = yaml.Unmarshal(bs, &profile)
-
 	if err != nil {
 		return "", errors.Wrap(err, "failed to unmarshall profile")
 	}
 
-	output := fmt.Sprintf("## %s\n", name)
+	var buffer bytes.Buffer
+	buffer.WriteString(fmt.Sprintf("## %s\n", name))
 	for _, host := range profile.HostList {
-		output += fmt.Sprintf("%s %s %s\n", host.IP, host.Name, host.Alias)
+		buffer.WriteString(fmt.Sprintf("%s %s %s\n", host.IP, host.Name, host.Alias))
 	}
-
-	return output, nil
+	return buffer.String(), nil
 }
 
 func (hg hostsGenerator) BuildHostsFromProfile(profile model.Profile) string {

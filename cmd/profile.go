@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
+	"log"
+	"os"
+	"os/user"
 	"strings"
 
 	"github.com/eduardonunesp/hostz/internals/generator"
@@ -76,9 +78,61 @@ var listProfilesCmd = &cobra.Command{
 	},
 }
 
+func isRoot() bool {
+	currentUser, err := user.Current()
+	if err != nil {
+		log.Fatalf("[isRoot] Unable to get current user: %s", err)
+	}
+	return currentUser.Username == "root"
+}
+
 var useFromProfileCmd = &cobra.Command{
 	Use:   "use <profile>",
 	Short: "Configures the hostsfile with the selected profile",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			cmd.Usage()
+			return fmt.Errorf("profile name needed")
+		}
+
+		profileParser := parser.NewProfileParser()
+		profileNames, err := profileParser.GetProfileNames()
+
+		if err != nil {
+			return fmt.Errorf("failed to get profile names %s", err)
+		}
+
+		for _, name := range profileNames {
+			if name == args[0] {
+				if !isRoot() {
+					return fmt.Errorf("you need to be root to use this command")
+				}
+
+				hostsGenerator := generator.NewHostsGenerator()
+				output, err := hostsGenerator.BuildHostsFromProfileName(args[0])
+
+				if err != nil {
+					return fmt.Errorf("Failed to get profile data %s", err)
+				}
+
+				err = os.WriteFile("/etc/hosts", []byte(output), 0644)
+
+				if err != nil {
+					return fmt.Errorf("Failed to write to hostsfile %s", err)
+				}
+
+				return nil
+			}
+		}
+
+		fmt.Printf("Profile %s not find\n", args[0])
+		return nil
+	},
+}
+
+var printProfileCmd = &cobra.Command{
+	Use:   "print <profile>",
+	Short: "Print to terminal the profile selected",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			cmd.Usage()
@@ -101,17 +155,12 @@ var useFromProfileCmd = &cobra.Command{
 					return fmt.Errorf("Failed to get profile data %s", err)
 				}
 
-				err = ioutil.WriteFile("/etc/hosts", []byte(output), 0644)
-
-				if err != nil {
-					return fmt.Errorf("Failed to write to hostsfile %s", err)
-				}
+				fmt.Println(output)
 
 				return nil
 			}
 		}
 
-		fmt.Printf("Profile %s not find\n", args[0])
 		return nil
 	},
 }
@@ -151,4 +200,7 @@ func init() {
 
 	profileCmd.AddCommand(currentProfileCmd)
 	currentProfileCmd.SetUsageTemplate("current")
+
+	profileCmd.AddCommand(printProfileCmd)
+	currentProfileCmd.SetUsageTemplate("print <profile name>")
 }

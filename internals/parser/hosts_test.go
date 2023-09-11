@@ -3,20 +3,20 @@ package parser
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestReadHostsFile(t *testing.T) {
 	hosts := NewHostsParser()
 	result, err := hosts.ReadHostsFile("../../fixtures/hosts")
-	assert.NotNil(t, result)
-	assert.Equal(t, err, nil)
+	require.NotNil(t, result)
+	require.Equal(t, err, nil)
 }
 
 func TestParseHosts(t *testing.T) {
 	hosts := NewHostsParser()
 	hostBytes, err := hosts.ReadHostsFile("../../fixtures/hosts")
-	assert.Nil(t, err)
+	require.Nil(t, err)
 	results := hosts.ParseHosts(hostBytes)
-	assert.Equal(t, len(results), 3)
+	require.Equal(t, len(results), 3)
 }

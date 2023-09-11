@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/eduardonunesp/hostz/internals/model"
@@ -21,7 +21,7 @@ func NewHostsParser() HostsParser {
 }
 
 func (hs hostsParser) ReadHostsFile(hostsPath string) ([]byte, error) {
-	bs, err := ioutil.ReadFile(hostsPath)
+	bs, err := os.ReadFile(hostsPath)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read hosts file")

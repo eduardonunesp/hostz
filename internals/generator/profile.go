@@ -2,7 +2,6 @@ package generator
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/user"
 
@@ -23,7 +22,7 @@ func NewProfileGenerator() ProfileGenerator {
 	return profileGenerator{}
 }
 
-func (pg profileGenerator) buildFromProfile(profile model.Profile) error {
+func (p profileGenerator) buildFromProfile(profile model.Profile) error {
 	bs, err := yaml.Marshal(profile)
 	if err != nil {
 		return errors.Wrap(err, "failed to create profile")
@@ -44,12 +43,12 @@ func (pg profileGenerator) buildFromProfile(profile model.Profile) error {
 	}
 
 	if configExists := internals.FileExists(homeConfigFile); !configExists {
-		if err := ioutil.WriteFile(homeConfigFile, []byte{}, 0644); err != nil {
+		if err := os.WriteFile(homeConfigFile, []byte{}, 0644); err != nil {
 			panic(fmt.Errorf("unable to write config file: %s", err))
 		}
 	}
 
-	if err := ioutil.WriteFile(homeConfigFile, bs, 0644); err != nil {
+	if err := os.WriteFile(homeConfigFile, bs, 0644); err != nil {
 		return errors.Wrap(err, "fatal error write configuration")
 	}
 
